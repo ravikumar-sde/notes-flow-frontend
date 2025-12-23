@@ -16,7 +16,7 @@ export default function WorkspaceSidebar({ onSelectPage, selectedPageId, isColla
     <>
       {isCollapsed && (
         <div className="absolute top-3 left-3 w-93 bg-[#1a1a1a] z-40">
-          <WorkspaceSelector isCollapsed={isCollapsed} />
+          <WorkspaceSelector />
           {/* Collapse Toggle Button */}
           <button
             onClick={onToggleCollapse}

@@ -167,7 +167,7 @@ export default function PageEditor({ page }: PageEditorProps) {
             rows={1}
             ref={textareaRef}
             onInput={adjustHeight}
-            className="w-full text-[2.5em] font-bold leading-[1.2] border-none outline-none focus:ring-0 py-1 px-0 bg-transparent text-[#e3e3e3] placeholder-[#5a5a5a] disabled:cursor-not-allowed disabled:opacity-60 tracking-tight"
+            className="w-full resize-none text-[2.5em] font-bold leading-[1.2] border-none outline-none focus:ring-0 py-1 px-0 bg-transparent text-[#e3e3e3] placeholder-[#5a5a5a] disabled:cursor-not-allowed disabled:opacity-60 tracking-tight"
           />
         </div>
 

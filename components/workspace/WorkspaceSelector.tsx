@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { Workspace } from '@/types/workspace';
 
-export default function WorkspaceSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
+export default function WorkspaceSelector() {
   const { workspaces, currentWorkspace, setCurrentWorkspace, createNewWorkspace, updateWorkspace } = useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
