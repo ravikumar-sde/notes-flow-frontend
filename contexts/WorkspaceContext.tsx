@@ -1,11 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Workspace, WorkspaceInvitation, MemberRole, Permission } from '@/types/workspace';
 import { Page } from '@/types/blocks';
 import {
   createWorkspace,
-  addMemberToWorkspace,
   removeMemberFromWorkspace,
   updateMember,
   createInvitation,
@@ -26,6 +25,7 @@ interface WorkspaceContextType {
   setCurrentWorkspace: (workspace: Workspace | null) => void;
   createNewWorkspace: (name: string, description?: string, icon?: string) => Workspace;
   updateWorkspaceName: (workspaceId: string, name: string) => void;
+  updateWorkspace: (workspaceId: string, name: string, description?: string) => void;
   deleteWorkspace: (workspaceId: string) => void;
 
   // Member actions
@@ -91,6 +91,23 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     if (currentWorkspace?.id === workspaceId) {
       setCurrentWorkspace((prev) =>
         prev ? { ...prev, name, updatedAt: new Date() } : null
+      );
+    }
+  }, [currentWorkspace]);
+
+  // Update workspace (name and description)
+  const updateWorkspace = useCallback((workspaceId: string, name: string, description?: string) => {
+    setWorkspaces((prev) =>
+      prev.map((ws) =>
+        ws.id === workspaceId
+          ? { ...ws, name, description, updatedAt: new Date() }
+          : ws
+      )
+    );
+
+    if (currentWorkspace?.id === workspaceId) {
+      setCurrentWorkspace((prev) =>
+        prev ? { ...prev, name, description, updatedAt: new Date() } : null
       );
     }
   }, [currentWorkspace]);
@@ -181,7 +198,7 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     }
 
     const newPage: Page = {
-      id: `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `page_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       workspaceId: currentWorkspace.id,
       title,
       blocks: [],
@@ -246,6 +263,7 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     setCurrentWorkspace,
     createNewWorkspace,
     updateWorkspaceName,
+    updateWorkspace,
     deleteWorkspace,
     inviteMember,
     removeMember,

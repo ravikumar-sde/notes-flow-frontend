@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { Workspace } from '@/types/workspace';
 
-export default function WorkspaceSelector() {
-  const { workspaces, currentWorkspace, setCurrentWorkspace, createNewWorkspace } = useWorkspace();
+export default function WorkspaceSelector({ isCollapsed = false }: { isCollapsed?: boolean }) {
+  const { workspaces, currentWorkspace, setCurrentWorkspace, createNewWorkspace, updateWorkspace } = useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [newWorkspaceDescription, setNewWorkspaceDescription] = useState('');
+  const [editWorkspaceName, setEditWorkspaceName] = useState('');
+  const [editWorkspaceDescription, setEditWorkspaceDescription] = useState('');
 
   const handleCreateWorkspace = () => {
     if (!newWorkspaceName.trim()) return;
@@ -26,37 +29,111 @@ export default function WorkspaceSelector() {
     setIsOpen(false);
   };
 
+  const handleEditWorkspace = () => {
+    if (!currentWorkspace) return;
+    setEditWorkspaceName(currentWorkspace.name);
+    setEditWorkspaceDescription(currentWorkspace.description || '');
+    setShowEditForm(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!currentWorkspace || !editWorkspaceName.trim()) return;
+
+    updateWorkspace(currentWorkspace.id, editWorkspaceName, editWorkspaceDescription || undefined);
+    setEditWorkspaceName('');
+    setEditWorkspaceDescription('');
+    setShowEditForm(false);
+  };
+
   return (
     <div className="relative">
-      {/* Current Workspace Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-linear-to-br from-[#1a1a1a]/90 via-[#1f1f1f]/90 to-[#1a1a1a]/90 text-[#f5f5f5] rounded-xl hover:from-[#242424]/90 hover:via-[#2a2a2a]/90 hover:to-[#242424]/90 transition-all duration-300 border border-[#2a2a2a]/50 hover:border-[#3a3a3a] shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm group"
-      >
-        <span className="text-2xl group-hover:scale-110 transition-transform duration-300">{currentWorkspace?.icon || '📁'}</span>
-        <div className="flex-1 text-left">
-          <div className="font-semibold text-sm">
-            {currentWorkspace?.name || 'Select Workspace'}
+      {showEditForm ? (
+        /* Edit Workspace Form */
+        <div className="p-4 bg-linear-to-br from-[#1a1a1a]/90 to-[#1f1f1f]/90 rounded-md border border-[#2a2a2a]/50 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
+          <div className="text-sm font-semibold text-[#e5e5e5] mb-3">Edit Workspace</div>
+          <input
+            type="text"
+            value={editWorkspaceName}
+            onChange={(e) => setEditWorkspaceName(e.target.value)}
+            placeholder="Workspace name"
+            className="w-full px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
+            autoFocus
+          />
+          <input
+            type="text"
+            value={editWorkspaceDescription}
+            onChange={(e) => setEditWorkspaceDescription(e.target.value)}
+            placeholder="Description (optional)"
+            className="w-full px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-3 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveEdit}
+              disabled={!editWorkspaceName.trim()}
+              className="flex-1 px-3 py-2 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)]"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => {
+                setShowEditForm(false);
+                setEditWorkspaceName('');
+                setEditWorkspaceDescription('');
+              }}
+              className="px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] rounded-lg text-sm hover:bg-[#2a2a2a]/80 transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60"
+            >
+              Cancel
+            </button>
           </div>
-          {currentWorkspace?.description && (
-            <div className="text-xs text-[#a0a0a0] truncate">
-              {currentWorkspace.description}
-            </div>
-          )}
         </div>
-        <svg
-          className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+      ) : (
+        /* Current Workspace Button */
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center gap-3 px-4 py-3 bg-linear-to-br from-[#1a1a1a]/90 via-[#1f1f1f]/90 to-[#1a1a1a]/90 text-[#f5f5f5] rounded-md hover:from-[#242424]/90 hover:via-[#2a2a2a]/90 hover:to-[#242424]/90 transition-all duration-300 border border-[#2a2a2a]/50 hover:border-[#3a3a3a] shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm group"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+          <span className="text-2xl group-hover:scale-110 transition-transform duration-300 bg-[#2a2a2a]/60 rounded-md px-4 py-2">{currentWorkspace?.name?.charAt(0) || 'W'}</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold text-md">
+              {currentWorkspace?.name || 'Select Workspace'}
+            </div>
+            {currentWorkspace?.description && (
+              <div className="text-xs text-[#a0a0a0] truncate">
+                {currentWorkspace.description}
+              </div>
+            )}
+          </div>
+
+          {/* Edit Button */}
+          {currentWorkspace && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditWorkspace();
+              }}
+              className="p-2 text-[#9b9b9b] hover:text-[#e5e5e5] hover:bg-[#2a2a2a]/60 rounded-md transition-all duration-200"
+              title="Edit workspace"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          )}
+
+          <svg
+            className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      )}
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 max-h-96 overflow-hidden backdrop-blur-xl">
+        <div className="absolute top-full left-0 mt-2 w-full bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 max-h-96 overflow-hidden backdrop-blur-xl">
           {/* Workspace List */}
           <div className="p-2 max-h-96 overflow-y-auto">
             <div className="text-xs text-[#6b6b6b] px-3 py-2 font-semibold tracking-wider">YOUR WORKSPACES</div>
@@ -69,17 +146,17 @@ export default function WorkspaceSelector() {
                 <button
                   key={workspace.id}
                   onClick={() => handleSelectWorkspace(workspace)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 ${
                     currentWorkspace?.id === workspace.id
                       ? 'bg-linear-to-r from-[#2a2a2a]/80 to-[#252525]/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] border border-[#3a3a3a]/40'
                       : 'hover:bg-[#252525]/60 hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
                   }`}
                 >
-                  <span className="text-xl">{workspace.icon || '📁'}</span>
+                  <span className="text-xl">{workspace.name?.charAt(0) || 'W'}</span>
                   <div className="flex-1 text-left">
-                    <div className="text-sm text-[#e5e5e5] font-medium">{workspace.name}</div>
+                    <div className="text-md text-[#e5e5e5] font-medium">{workspace.name}</div>
                     {workspace.description && (
-                      <div className="text-xs text-[#6b6b6b] truncate">{workspace.description}</div>
+                      <div className="text-sm text-[#6b6b6b] truncate">{workspace.description}</div>
                     )}
                     <div className="text-xs text-[#6b6b6b] mt-1">
                       {workspace.members.length} member{workspace.members.length !== 1 ? 's' : ''}
@@ -123,7 +200,7 @@ export default function WorkspaceSelector() {
                 value={newWorkspaceName}
                 onChange={(e) => setNewWorkspaceName(e.target.value)}
                 placeholder="Workspace name"
-                className="w-full px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
+                className="w-full px-3 py-3 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
                 autoFocus
               />
               <input
