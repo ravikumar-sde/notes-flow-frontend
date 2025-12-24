@@ -13,10 +13,11 @@ interface BlockRendererProps {
   onUpdate: (blockId: string, data: any) => void;
   onDelete: (blockId: string) => void;
   onFocus: (blockId: string) => void;
+  onAddBlock?: (afterBlockId: string) => void;
   onConvertBlockType?: (blockId: string, newType: BlockType) => void;
 }
 
-export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onConvertBlockType }: BlockRendererProps) {
+export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onAddBlock, onConvertBlockType }: BlockRendererProps) {
   const handleUpdate = (data: any) => {
     onUpdate(block.id, data);
   };
@@ -27,6 +28,12 @@ export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onCo
 
   const handleFocus = () => {
     onFocus(block.id);
+  };
+
+  const handleAddBlock = () => {
+    if (onAddBlock) {
+      onAddBlock(block.id);
+    }
   };
 
   const handleConvertToType = (type: BlockType) => {
@@ -96,6 +103,7 @@ export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onCo
           onUpdate={handleUpdate}
           onDelete={handleDelete}
           onFocus={handleFocus}
+          onAddBlock={handleAddBlock}
         />
       );
 

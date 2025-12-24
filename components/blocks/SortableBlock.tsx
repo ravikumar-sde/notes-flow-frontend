@@ -40,7 +40,7 @@ export default function SortableBlock({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group py-0.5">
+    <div ref={setNodeRef} style={style} className="relative group py-0.5" data-block-id={block.id}>
       {/* Drag handle */}
       {!disabled && (
         <div
@@ -60,6 +60,7 @@ export default function SortableBlock({
         onUpdate={onUpdate}
         onDelete={onDelete}
         onFocus={onFocus}
+        onAddBlock={onAddBlock}
         onConvertBlockType={onConvertBlockType}
       />
 

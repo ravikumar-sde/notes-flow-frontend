@@ -75,6 +75,16 @@ body {
   outline-offset: 2px;
 }
 
+/* Remove focus outline for text inputs and textareas */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none;
+}
+
 /* Selection */
 ::selection {
   background: rgba(99, 102, 241, 0.3);

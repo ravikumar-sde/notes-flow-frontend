@@ -107,6 +107,19 @@ export default function PageEditor({ page }: PageEditorProps) {
     } else {
       setBlocks([...blocks, newBlock]);
     }
+
+    // Focus the newly created block
+    setTimeout(() => {
+      setFocusedBlockId(newBlock.id);
+      // Find and focus the input element of the new block
+      const newBlockElement = document.querySelector(`[data-block-id="${newBlock.id}"]`);
+      if (newBlockElement) {
+        const input = newBlockElement.querySelector('textarea, input') as HTMLElement;
+        if (input) {
+          input.focus();
+        }
+      }
+    }, 0);
   };
 
   const handleFocusBlock = (blockId: string) => {
