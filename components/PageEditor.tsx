@@ -59,10 +59,10 @@ export default function PageEditor({ page }: PageEditorProps) {
       prevBlocks.map(block => {
         if (block.id === blockId) {
           const newBlock = createBlock(newType);
-          // Preserve content if converting between text-based blocks
+          // Preserve content if converting between text-based blocks (including lists)
           if (
-            (block.type === 'paragraph' || block.type.startsWith('heading')) &&
-            (newType === 'paragraph' || newType.startsWith('heading'))
+            (block.type === 'paragraph' || block.type.startsWith('heading') || block.type === 'bulletList' || block.type === 'numberedList') &&
+            (newType === 'paragraph' || newType.startsWith('heading') || newType === 'bulletList' || newType === 'numberedList')
           ) {
             // Type guard: only text-based blocks have content property
             const content = 'content' in block ? block.content : '';
@@ -73,6 +73,17 @@ export default function PageEditor({ page }: PageEditorProps) {
         return block;
       })
     );
+
+    // Maintain focus on the converted block
+    setTimeout(() => {
+      const blockElement = document.querySelector(`[data-block-id="${blockId}"]`);
+      if (blockElement) {
+        const input = blockElement.querySelector('textarea, input') as HTMLElement;
+        if (input) {
+          input.focus();
+        }
+      }
+    }, 0);
   };
 
   const sensors = useSensors(
@@ -195,18 +206,45 @@ export default function PageEditor({ page }: PageEditorProps) {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-0.5" onKeyDown={canEdit ? handleKeyDown : undefined}>
-              {blocks.map((block) => (
-                <SortableBlock
-                  key={block.id}
-                  block={block}
-                  onUpdate={canEdit ? handleUpdateBlock : () => { }}
-                  onDelete={canEdit ? handleDeleteBlock : () => { }}
-                  onFocus={handleFocusBlock}
-                  onAddBlock={canEdit ? (afterBlockId) => handleAddBlock('paragraph', afterBlockId) : undefined}
-                  onConvertBlockType={canEdit ? handleConvertBlockType : undefined}
-                  disabled={!canEdit}
-                />
-              ))}
+              {blocks.map((block, index) => {
+                // Determine what type of block to create on Enter
+                let newBlockType: BlockType = 'paragraph';
+                if (block.type === 'bulletList') {
+                  newBlockType = 'bulletList';
+                } else if (block.type === 'numberedList') {
+                  newBlockType = 'numberedList';
+                }
+
+                // Calculate list index for numbered lists
+                let listIndex: number | undefined;
+                if (block.type === 'numberedList') {
+                  // Find the start of the current numbered list sequence
+                  let startIndex = index;
+                  for (let i = index - 1; i >= 0; i--) {
+                    if (blocks[i].type === 'numberedList') {
+                      startIndex = i;
+                    } else {
+                      break;
+                    }
+                  }
+                  // Calculate position in the sequence (1-based)
+                  listIndex = index - startIndex + 1;
+                }
+
+                return (
+                  <SortableBlock
+                    key={block.id}
+                    block={block}
+                    onUpdate={canEdit ? handleUpdateBlock : () => { }}
+                    onDelete={canEdit ? handleDeleteBlock : () => { }}
+                    onFocus={handleFocusBlock}
+                    onAddBlock={canEdit ? (afterBlockId) => handleAddBlock(newBlockType, afterBlockId) : undefined}
+                    onConvertBlockType={canEdit ? handleConvertBlockType : undefined}
+                    disabled={!canEdit}
+                    listIndex={listIndex}
+                  />
+                );
+              })}
             </div>
           </SortableContext>
         </DndContext>

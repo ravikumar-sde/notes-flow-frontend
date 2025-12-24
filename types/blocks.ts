@@ -4,6 +4,8 @@ export type BlockType =
   | 'heading1'
   | 'heading2'
   | 'heading3'
+  | 'bulletList'
+  | 'numberedList'
   | 'image'
   | 'table'
   | 'embed'
@@ -35,6 +37,17 @@ export interface Heading2Block extends BaseBlock {
 
 export interface Heading3Block extends BaseBlock {
   type: 'heading3';
+  content: string;
+}
+
+// List blocks
+export interface BulletListBlock extends BaseBlock {
+  type: 'bulletList';
+  content: string;
+}
+
+export interface NumberedListBlock extends BaseBlock {
+  type: 'numberedList';
   content: string;
 }
 
@@ -82,6 +95,8 @@ export type Block =
   | Heading1Block
   | Heading2Block
   | Heading3Block
+  | BulletListBlock
+  | NumberedListBlock
   | ImageBlock
   | TableBlock
   | EmbedBlock

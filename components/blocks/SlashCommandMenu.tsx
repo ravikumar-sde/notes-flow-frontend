@@ -41,6 +41,20 @@ const BLOCK_TYPES: BlockTypeOption[] = [
     keywords: ['heading', 'h3'],
   },
   {
+    type: 'bulletList',
+    label: 'Bullet List',
+    description: 'Create a bulleted list',
+    icon: '•',
+    keywords: ['bullet', 'list', 'ul', 'unordered'],
+  },
+  {
+    type: 'numberedList',
+    label: 'Numbered List',
+    description: 'Create a numbered list',
+    icon: '1.',
+    keywords: ['numbered', 'list', 'ol', 'ordered', 'number'],
+  },
+  {
     type: 'image',
     label: 'Image',
     description: 'Upload or embed an image',

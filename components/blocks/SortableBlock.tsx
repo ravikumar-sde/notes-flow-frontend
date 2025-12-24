@@ -13,6 +13,7 @@ interface SortableBlockProps {
   onAddBlock?: (afterBlockId: string) => void;
   onConvertBlockType?: (blockId: string, newType: BlockType) => void;
   disabled?: boolean;
+  listIndex?: number; // For numbered lists
 }
 
 export default function SortableBlock({
@@ -23,6 +24,7 @@ export default function SortableBlock({
   onAddBlock,
   onConvertBlockType,
   disabled = false,
+  listIndex,
 }: SortableBlockProps) {
   const {
     attributes,
@@ -62,6 +64,7 @@ export default function SortableBlock({
         onFocus={onFocus}
         onAddBlock={onAddBlock}
         onConvertBlockType={onConvertBlockType}
+        listIndex={listIndex}
       />
 
       {/* Add block button */}

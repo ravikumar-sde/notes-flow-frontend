@@ -1,8 +1,8 @@
-import { Block, BlockType, ParagraphBlock, Heading1Block, Heading2Block, Heading3Block, ImageBlock, TableBlock, EmbedBlock, CodeBlock } from '@/types/blocks';
+import { Block, BlockType, ParagraphBlock, Heading1Block, Heading2Block, Heading3Block, BulletListBlock, NumberedListBlock, ImageBlock, TableBlock, EmbedBlock, CodeBlock } from '@/types/blocks';
 
 // Generate unique ID for blocks
 export function generateBlockId(): string {
-  return `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `block_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
 // Create a new block of specified type
@@ -41,6 +41,20 @@ export function createBlock(type: BlockType): Block {
         type: 'heading3',
         content: '',
       } as Heading3Block;
+
+    case 'bulletList':
+      return {
+        ...baseBlock,
+        type: 'bulletList',
+        content: '',
+      } as BulletListBlock;
+
+    case 'numberedList':
+      return {
+        ...baseBlock,
+        type: 'numberedList',
+        content: '',
+      } as NumberedListBlock;
 
     case 'image':
       return {

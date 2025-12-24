@@ -3,6 +3,8 @@
 import { Block, BlockType } from '@/types/blocks';
 import ParagraphBlock from './ParagraphBlock';
 import HeadingBlock from './HeadingBlock';
+import BulletListBlock from './BulletListBlock';
+import NumberedListBlock from './NumberedListBlock';
 import ImageBlock from './ImageBlock';
 import TableBlock from './TableBlock';
 import EmbedBlock from './EmbedBlock';
@@ -15,9 +17,10 @@ interface BlockRendererProps {
   onFocus: (blockId: string) => void;
   onAddBlock?: (afterBlockId: string) => void;
   onConvertBlockType?: (blockId: string, newType: BlockType) => void;
+  listIndex?: number; // For numbered lists
 }
 
-export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onAddBlock, onConvertBlockType }: BlockRendererProps) {
+export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onAddBlock, onConvertBlockType, listIndex }: BlockRendererProps) {
   const handleUpdate = (data: any) => {
     onUpdate(block.id, data);
   };
@@ -63,6 +66,31 @@ export default function BlockRenderer({ block, onUpdate, onDelete, onFocus, onAd
           onUpdate={(content) => handleUpdate({ content })}
           onDelete={handleDelete}
           onFocus={handleFocus}
+        />
+      );
+
+    case 'bulletList':
+      return (
+        <BulletListBlock
+          block={block}
+          onUpdate={(content) => handleUpdate({ content })}
+          onDelete={handleDelete}
+          onFocus={handleFocus}
+          onAddBlock={handleAddBlock}
+          onConvertToType={handleConvertToType}
+        />
+      );
+
+    case 'numberedList':
+      return (
+        <NumberedListBlock
+          block={block}
+          onUpdate={(content) => handleUpdate({ content })}
+          onDelete={handleDelete}
+          onFocus={handleFocus}
+          onAddBlock={handleAddBlock}
+          onConvertToType={handleConvertToType}
+          index={listIndex}
         />
       );
 

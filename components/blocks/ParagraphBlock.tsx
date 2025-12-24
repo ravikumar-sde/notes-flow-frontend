@@ -100,7 +100,7 @@ export default function ParagraphBlock({ block, onUpdate, onDelete, onFocus, onC
           onKeyDown={handleKeyDown}
           onFocus={onFocus}
           placeholder="Type '/' for commands or start writing..."
-          className="w-full resize-none border-none outline-none focus:ring-0 text-[15px] leading-[1.6] py-1 px-0 bg-transparent text-[#e3e3e3] placeholder-[#5a5a5a] transition-colors"
+          className="w-full resize-none border-none outline-none focus:ring-0 text-md leading-[1.6] py-1 px-0 bg-transparent text-[#e3e3e3] placeholder-[#5a5a5a] transition-colors"
           rows={1}
           style={{
             minHeight: '1.6em',
