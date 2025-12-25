@@ -1,17 +1,15 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Workspace, WorkspaceInvitation, MemberRole, Permission } from '@/types/workspace';
 import { Page } from '@/types/blocks';
 import {
-  createWorkspace,
-  removeMemberFromWorkspace,
-  updateMember,
   createInvitation,
   acceptInvitation,
   declineInvitation,
 } from '@/lib/workspaceUtils';
 import { getUserPermissions } from '@/lib/permissions';
+import * as workspaceApi from '@/lib/workspaceApi';
 
 interface WorkspaceContextType {
   // Current state
@@ -21,17 +19,22 @@ interface WorkspaceContextType {
   pages: Page[];
   invitations: WorkspaceInvitation[];
 
+  // Loading and error states
+  isLoading: boolean;
+  error: string | null;
+
   // Workspace actions
   setCurrentWorkspace: (workspace: Workspace | null) => void;
-  createNewWorkspace: (name: string, description?: string, icon?: string) => Workspace;
-  updateWorkspaceName: (workspaceId: string, name: string) => void;
-  updateWorkspace: (workspaceId: string, name: string, description?: string) => void;
-  deleteWorkspace: (workspaceId: string) => void;
+  createNewWorkspace: (name: string, description?: string, icon?: string) => Promise<Workspace>;
+  updateWorkspaceName: (workspaceId: string, name: string) => Promise<void>;
+  updateWorkspace: (workspaceId: string, name: string, description?: string) => Promise<void>;
+  deleteWorkspace: (workspaceId: string) => Promise<void>;
+  refreshWorkspaces: () => Promise<void>;
 
   // Member actions
-  inviteMember: (email: string, role: MemberRole, permissions: Permission[]) => void;
-  removeMember: (memberId: string) => void;
-  updateMemberRole: (memberId: string, role: MemberRole, permissions: Permission[]) => void;
+  inviteMember: (email: string, role: MemberRole, permissions: Permission[]) => Promise<void>;
+  removeMember: (memberId: string) => Promise<void>;
+  updateMemberRole: (memberId: string, role: MemberRole, permissions: Permission[]) => Promise<void>;
 
   // Invitation actions
   acceptWorkspaceInvitation: (invitationId: string) => void;
@@ -63,108 +66,229 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
   const [pages, setPages] = useState<Page[]>([]);
   const [invitations, setInvitations] = useState<WorkspaceInvitation[]>([]);
   const [currentUserId] = useState(initialUserId);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch workspaces on mount
+  useEffect(() => {
+    refreshWorkspaces();
+  }, []);
+
+  // Refresh workspaces from API
+  const refreshWorkspaces = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedWorkspaces = await workspaceApi.listWorkspaces();
+      setWorkspaces(fetchedWorkspaces);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load workspaces';
+      setError(errorMessage);
+      console.error('Error fetching workspaces:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Create new workspace
-  const createNewWorkspace = useCallback((name: string, description?: string, icon?: string) => {
-    const newWorkspace = createWorkspace({
-      name,
-      description,
-      icon,
-      ownerId: currentUserId,
-    });
+  const createNewWorkspace = useCallback(async (name: string, description?: string, icon?: string): Promise<Workspace> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    setWorkspaces((prev) => [...prev, newWorkspace]);
-    setCurrentWorkspace(newWorkspace);
-    return newWorkspace;
-  }, [currentUserId]);
+      const newWorkspace = await workspaceApi.createWorkspace({
+        name,
+        description,
+        icon,
+      });
+
+      setWorkspaces((prev) => [...prev, newWorkspace]);
+      setCurrentWorkspace(newWorkspace);
+      return newWorkspace;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create workspace';
+      setError(errorMessage);
+      console.error('Error creating workspace:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Update workspace name
-  const updateWorkspaceName = useCallback((workspaceId: string, name: string) => {
-    setWorkspaces((prev) =>
-      prev.map((ws) =>
-        ws.id === workspaceId
-          ? { ...ws, name, updatedAt: new Date() }
-          : ws
-      )
-    );
+  const updateWorkspaceName = useCallback(async (workspaceId: string, name: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    if (currentWorkspace?.id === workspaceId) {
-      setCurrentWorkspace((prev) =>
-        prev ? { ...prev, name, updatedAt: new Date() } : null
+      const updatedWorkspace = await workspaceApi.updateWorkspace(workspaceId, { name });
+
+      setWorkspaces((prev) =>
+        prev.map((ws) => (ws.id === workspaceId ? updatedWorkspace : ws))
       );
+
+      if (currentWorkspace?.id === workspaceId) {
+        setCurrentWorkspace(updatedWorkspace);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update workspace';
+      setError(errorMessage);
+      console.error('Error updating workspace name:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   }, [currentWorkspace]);
 
   // Update workspace (name and description)
-  const updateWorkspace = useCallback((workspaceId: string, name: string, description?: string) => {
-    setWorkspaces((prev) =>
-      prev.map((ws) =>
-        ws.id === workspaceId
-          ? { ...ws, name, description, updatedAt: new Date() }
-          : ws
-      )
-    );
+  const updateWorkspace = useCallback(async (workspaceId: string, name: string, description?: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    if (currentWorkspace?.id === workspaceId) {
-      setCurrentWorkspace((prev) =>
-        prev ? { ...prev, name, description, updatedAt: new Date() } : null
+      const updatedWorkspace = await workspaceApi.updateWorkspace(workspaceId, {
+        name,
+        description,
+      });
+
+      setWorkspaces((prev) =>
+        prev.map((ws) => (ws.id === workspaceId ? updatedWorkspace : ws))
       );
+
+      if (currentWorkspace?.id === workspaceId) {
+        setCurrentWorkspace(updatedWorkspace);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update workspace';
+      setError(errorMessage);
+      console.error('Error updating workspace:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   }, [currentWorkspace]);
 
   // Delete workspace
-  const deleteWorkspace = useCallback((workspaceId: string) => {
-    setWorkspaces((prev) => prev.filter((ws) => ws.id !== workspaceId));
-    
-    if (currentWorkspace?.id === workspaceId) {
-      setCurrentWorkspace(null);
-    }
+  const deleteWorkspace = useCallback(async (workspaceId: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    // Remove pages belonging to this workspace
-    setPages((prev) => prev.filter((page) => page.workspaceId !== workspaceId));
+      await workspaceApi.deleteWorkspace(workspaceId);
+
+      setWorkspaces((prev) => prev.filter((ws) => ws.id !== workspaceId));
+
+      if (currentWorkspace?.id === workspaceId) {
+        setCurrentWorkspace(null);
+      }
+
+      // Remove pages belonging to this workspace
+      setPages((prev) => prev.filter((page) => page.workspaceId !== workspaceId));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete workspace';
+      setError(errorMessage);
+      console.error('Error deleting workspace:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentWorkspace]);
 
   // Invite member
-  const inviteMember = useCallback((email: string, role: MemberRole, permissions: Permission[]) => {
+  const inviteMember = useCallback(async (email: string, role: MemberRole, permissions: Permission[]): Promise<void> => {
     if (!currentWorkspace) return;
 
-    const invitation = createInvitation({
-      workspaceId: currentWorkspace.id,
-      email,
-      role,
-      permissions,
-      invitedBy: currentUserId,
-    });
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    setInvitations((prev) => [...prev, invitation]);
-  }, [currentWorkspace, currentUserId]);
+      await workspaceApi.inviteMemberToWorkspace(currentWorkspace.id, {
+        email,
+        role,
+        permissions,
+      });
+
+      // Create local invitation for UI (in real app, this would come from backend)
+      const invitation = createInvitation({
+        workspaceId: currentWorkspace.id,
+        email,
+        role,
+        permissions,
+        invitedBy: currentUserId,
+      });
+
+      setInvitations((prev) => [...prev, invitation]);
+
+      // Refresh workspaces to get updated member list
+      await refreshWorkspaces();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to invite member';
+      setError(errorMessage);
+      console.error('Error inviting member:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentWorkspace, currentUserId, refreshWorkspaces]);
 
   // Remove member
-  const removeMember = useCallback((memberId: string) => {
+  const removeMember = useCallback(async (memberId: string): Promise<void> => {
     if (!currentWorkspace) return;
 
-    const updatedWorkspace = removeMemberFromWorkspace(currentWorkspace, memberId);
-    setCurrentWorkspace(updatedWorkspace);
-    setWorkspaces((prev) =>
-      prev.map((ws) => (ws.id === updatedWorkspace.id ? updatedWorkspace : ws))
-    );
-  }, [currentWorkspace]);
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await workspaceApi.removeMemberFromWorkspace(currentWorkspace.id, memberId);
+
+      // Refresh workspaces to get updated member list
+      await refreshWorkspaces();
+
+      // Update current workspace
+      const updatedWorkspace = workspaces.find(ws => ws.id === currentWorkspace.id);
+      if (updatedWorkspace) {
+        setCurrentWorkspace(updatedWorkspace);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to remove member';
+      setError(errorMessage);
+      console.error('Error removing member:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentWorkspace, workspaces, refreshWorkspaces]);
 
   // Update member role
-  const updateMemberRole = useCallback((memberId: string, role: MemberRole, permissions: Permission[]) => {
+  const updateMemberRole = useCallback(async (memberId: string, role: MemberRole, permissions: Permission[]): Promise<void> => {
     if (!currentWorkspace) return;
 
-    const updatedWorkspace = updateMember(currentWorkspace, {
-      memberId,
-      role,
-      permissions,
-    });
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    setCurrentWorkspace(updatedWorkspace);
-    setWorkspaces((prev) =>
-      prev.map((ws) => (ws.id === updatedWorkspace.id ? updatedWorkspace : ws))
-    );
-  }, [currentWorkspace]);
+      await workspaceApi.updateWorkspaceMember(currentWorkspace.id, memberId, {
+        role,
+        permissions,
+      });
+
+      // Refresh workspaces to get updated member list
+      await refreshWorkspaces();
+
+      // Update current workspace
+      const updatedWorkspace = workspaces.find(ws => ws.id === currentWorkspace.id);
+      if (updatedWorkspace) {
+        setCurrentWorkspace(updatedWorkspace);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update member';
+      setError(errorMessage);
+      console.error('Error updating member:', err);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentWorkspace, workspaces, refreshWorkspaces]);
 
   // Accept invitation (simplified - in real app would need backend)
   const acceptWorkspaceInvitation = useCallback((invitationId: string) => {
@@ -260,11 +384,14 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     currentUserId,
     pages,
     invitations,
+    isLoading,
+    error,
     setCurrentWorkspace,
     createNewWorkspace,
     updateWorkspaceName,
     updateWorkspace,
     deleteWorkspace,
+    refreshWorkspaces,
     inviteMember,
     removeMember,
     updateMemberRole,
