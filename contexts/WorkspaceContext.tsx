@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Workspace, WorkspaceInvitation, MemberRole, Permission } from '@/types/workspace';
 import { Page } from '@/types/blocks';
 import {
@@ -9,7 +10,26 @@ import {
   declineInvitation,
 } from '@/lib/workspaceUtils';
 import { getUserPermissions } from '@/lib/permissions';
+import { logout, isAuthenticated } from '@/lib/auth';
 import * as workspaceApi from '@/lib/workspaceApi';
+import { ApiError } from '@/lib/api';
+import Toast from '@/components/ui/Toast';
+
+/**
+ * Normalize workspace data to ensure all required fields are present
+ */
+function normalizeWorkspace(workspace: Workspace): Workspace {
+  return {
+    ...workspace,
+    members: workspace.members || [],
+    settings: workspace.settings || {
+      allowGuestInvites: true,
+      defaultPermission: 'can_view' as const,
+      requireApproval: false,
+      publicPages: false,
+    },
+  };
+}
 
 interface WorkspaceContextType {
   // Current state
@@ -61,6 +81,7 @@ interface WorkspaceProviderProps {
 }
 
 export function WorkspaceProvider({ children, initialUserId }: WorkspaceProviderProps) {
+  const router = useRouter();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
@@ -68,10 +89,47 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
   const [currentUserId] = useState(initialUserId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthErrorToast, setShowAuthErrorToast] = useState(false);
+
+  // Handle authentication errors
+  const handleAuthError = useCallback(() => {
+    // Set a user-friendly error message
+    setError('Your session has expired. Please log in again.');
+
+    // Show toast notification
+    setShowAuthErrorToast(true);
+
+    // Clear auth data
+    logout();
+
+    // Redirect to login after a brief delay to show the message
+    setTimeout(() => {
+      router.push('/auth/login');
+    }, 2000);
+  }, [router]);
+
+  // Handle API errors consistently
+  const handleApiError = useCallback((err: unknown, defaultMessage: string): never => {
+    // Handle authentication errors
+    if (err instanceof ApiError && (err.statusCode === 401 || err.statusCode === 403)) {
+      console.error('Authentication error:', err);
+      handleAuthError();
+      throw err;
+    }
+
+    const errorMessage = err instanceof Error ? err.message : defaultMessage;
+    setError(errorMessage);
+    console.error(defaultMessage, err);
+    throw err;
+  }, [handleAuthError]);
 
   // Fetch workspaces on mount
   useEffect(() => {
-    refreshWorkspaces();
+    // Only fetch if authenticated
+    if (isAuthenticated()) {
+      refreshWorkspaces();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Refresh workspaces from API
@@ -80,15 +138,28 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
       setIsLoading(true);
       setError(null);
       const fetchedWorkspaces = await workspaceApi.listWorkspaces();
-      setWorkspaces(fetchedWorkspaces);
+
+      console.log("FETCHED WORKSPACES:", fetchedWorkspaces);
+
+      // Normalize all workspaces
+      const normalizedWorkspaces = fetchedWorkspaces.map(normalizeWorkspace);
+
+      setWorkspaces(normalizedWorkspaces);
     } catch (err) {
+      // Handle authentication errors specially - don't throw
+      if (err instanceof ApiError && (err.statusCode === 401 || err.statusCode === 403)) {
+        console.error('Authentication error:', err);
+        handleAuthError();
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'Failed to load workspaces';
       setError(errorMessage);
       console.error('Error fetching workspaces:', err);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [handleAuthError]);
 
   // Create new workspace
   const createNewWorkspace = useCallback(async (name: string, description?: string, icon?: string): Promise<Workspace> => {
@@ -102,18 +173,18 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
         icon,
       });
 
-      setWorkspaces((prev) => [...prev, newWorkspace]);
-      setCurrentWorkspace(newWorkspace);
-      return newWorkspace;
+      // Normalize the workspace data
+      const normalizedWorkspace = normalizeWorkspace(newWorkspace);
+
+      setWorkspaces((prev) => [...prev, normalizedWorkspace]);
+      setCurrentWorkspace(normalizedWorkspace);
+      return normalizedWorkspace;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create workspace';
-      setError(errorMessage);
-      console.error('Error creating workspace:', err);
-      throw err;
+      return handleApiError(err, 'Failed to create workspace');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [handleApiError]);
 
   // Update workspace name
   const updateWorkspaceName = useCallback(async (workspaceId: string, name: string): Promise<void> => {
@@ -122,23 +193,21 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
       setError(null);
 
       const updatedWorkspace = await workspaceApi.updateWorkspace(workspaceId, { name });
+      const normalizedWorkspace = normalizeWorkspace(updatedWorkspace);
 
       setWorkspaces((prev) =>
-        prev.map((ws) => (ws.id === workspaceId ? updatedWorkspace : ws))
+        prev.map((ws) => (ws.id === workspaceId ? normalizedWorkspace : ws))
       );
 
       if (currentWorkspace?.id === workspaceId) {
-        setCurrentWorkspace(updatedWorkspace);
+        setCurrentWorkspace(normalizedWorkspace);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update workspace';
-      setError(errorMessage);
-      console.error('Error updating workspace name:', err);
-      throw err;
+      handleApiError(err, 'Failed to update workspace');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace]);
+  }, [currentWorkspace, handleApiError]);
 
   // Update workspace (name and description)
   const updateWorkspace = useCallback(async (workspaceId: string, name: string, description?: string): Promise<void> => {
@@ -150,23 +219,21 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
         name,
         description,
       });
+      const normalizedWorkspace = normalizeWorkspace(updatedWorkspace);
 
       setWorkspaces((prev) =>
-        prev.map((ws) => (ws.id === workspaceId ? updatedWorkspace : ws))
+        prev.map((ws) => (ws.id === workspaceId ? normalizedWorkspace : ws))
       );
 
       if (currentWorkspace?.id === workspaceId) {
-        setCurrentWorkspace(updatedWorkspace);
+        setCurrentWorkspace(normalizedWorkspace);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update workspace';
-      setError(errorMessage);
-      console.error('Error updating workspace:', err);
-      throw err;
+      handleApiError(err, 'Failed to update workspace');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace]);
+  }, [currentWorkspace, handleApiError]);
 
   // Delete workspace
   const deleteWorkspace = useCallback(async (workspaceId: string): Promise<void> => {
@@ -185,14 +252,11 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
       // Remove pages belonging to this workspace
       setPages((prev) => prev.filter((page) => page.workspaceId !== workspaceId));
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete workspace';
-      setError(errorMessage);
-      console.error('Error deleting workspace:', err);
-      throw err;
+      handleApiError(err, 'Failed to delete workspace');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace]);
+  }, [currentWorkspace, handleApiError]);
 
   // Invite member
   const inviteMember = useCallback(async (email: string, role: MemberRole, permissions: Permission[]): Promise<void> => {
@@ -222,14 +286,11 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
       // Refresh workspaces to get updated member list
       await refreshWorkspaces();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to invite member';
-      setError(errorMessage);
-      console.error('Error inviting member:', err);
-      throw err;
+      handleApiError(err, 'Failed to invite member');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace, currentUserId, refreshWorkspaces]);
+  }, [currentWorkspace, currentUserId, refreshWorkspaces, handleApiError]);
 
   // Remove member
   const removeMember = useCallback(async (memberId: string): Promise<void> => {
@@ -250,14 +311,11 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
         setCurrentWorkspace(updatedWorkspace);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to remove member';
-      setError(errorMessage);
-      console.error('Error removing member:', err);
-      throw err;
+      handleApiError(err, 'Failed to remove member');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace, workspaces, refreshWorkspaces]);
+  }, [currentWorkspace, workspaces, refreshWorkspaces, handleApiError]);
 
   // Update member role
   const updateMemberRole = useCallback(async (memberId: string, role: MemberRole, permissions: Permission[]): Promise<void> => {
@@ -281,14 +339,11 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
         setCurrentWorkspace(updatedWorkspace);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update member';
-      setError(errorMessage);
-      console.error('Error updating member:', err);
-      throw err;
+      handleApiError(err, 'Failed to update member');
     } finally {
       setIsLoading(false);
     }
-  }, [currentWorkspace, workspaces, refreshWorkspaces]);
+  }, [currentWorkspace, workspaces, refreshWorkspaces, handleApiError]);
 
   // Accept invitation (simplified - in real app would need backend)
   const acceptWorkspaceInvitation = useCallback((invitationId: string) => {
@@ -410,6 +465,14 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
   return (
     <WorkspaceContext.Provider value={value}>
       {children}
+      {showAuthErrorToast && (
+        <Toast
+          message="Your session has expired. Redirecting to login..."
+          type="error"
+          duration={2000}
+          onClose={() => setShowAuthErrorToast(false)}
+        />
+      )}
     </WorkspaceContext.Provider>
   );
 }

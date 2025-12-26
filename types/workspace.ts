@@ -46,10 +46,11 @@ export interface Workspace {
   description?: string;
   icon?: string;
   ownerId: string;
-  members: WorkspaceMember[];
+  members?: WorkspaceMember[]; // Optional as API might not always include members
   createdAt: Date;
   updatedAt: Date;
-  settings: WorkspaceSettings;
+  settings?: WorkspaceSettings; // Optional as API might not always include settings
+  role?: MemberRole; // Current user's role in this workspace
 }
 
 // Workspace settings

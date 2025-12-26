@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { Page } from '@/types/blocks';
-import SharePageModal from './SharePageModal';
 
 interface PageListProps {
   onSelectPage: (page: Page) => void;
@@ -11,10 +10,11 @@ interface PageListProps {
 }
 
 export default function PageList({ onSelectPage, selectedPageId }: PageListProps) {
-  const { currentWorkspace, pages, createPage, deletePage, canUserEdit } = useWorkspace();
+  const { currentWorkspace, pages, createPage, deletePage, updatePageTitle, canUserEdit } = useWorkspace();
   const [isCreating, setIsCreating] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
-  const [shareModalPage, setShareModalPage] = useState<Page | null>(null);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [editPageTitle, setEditPageTitle] = useState('');
 
   const canEdit = canUserEdit();
 
@@ -38,9 +38,23 @@ export default function PageList({ onSelectPage, selectedPageId }: PageListProps
     }
   };
 
-  const handleSharePage = (page: Page, e: React.MouseEvent) => {
+  const handleEditPage = (page: Page, e: React.MouseEvent) => {
     e.stopPropagation();
-    setShareModalPage(page);
+    setEditingPageId(page.id);
+    setEditPageTitle(page.title);
+  };
+
+  const handleSaveEdit = (pageId: string) => {
+    if (editPageTitle.trim()) {
+      updatePageTitle(pageId, editPageTitle);
+    }
+    setEditingPageId(null);
+    setEditPageTitle('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPageId(null);
+    setEditPageTitle('');
   };
 
   if (!currentWorkspace) {
@@ -57,17 +71,6 @@ export default function PageList({ onSelectPage, selectedPageId }: PageListProps
       <div className="px-3 py-2">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-medium text-[#9b9b9b] uppercase tracking-wide">Private</h3>
-          {canEdit && (
-            <button
-              onClick={() => setIsCreating(true)}
-              className="p-1 hover:bg-[#232323] rounded transition-colors"
-              title="New Page"
-            >
-              <svg className="w-4.5 h-4.5 text-[#9b9b9b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          )}
         </div>
 
         {/* Create Page Form */}
@@ -112,91 +115,134 @@ export default function PageList({ onSelectPage, selectedPageId }: PageListProps
 
       {/* Page List */}
       <div className="flex-1 overflow-y-auto px-2">
-        {workspacePages.length === 0 ? (
-          <div className="p-4 text-center">
-            <div className="text-[#9b9b9b] text-sm mb-2">No pages yet</div>
+        <div className="space-y-0.5">
+          {workspacePages.map((page) => (
+              <div
+                key={page.id}
+                className={`group flex items-center justify-between gap-2 px-2 rounded-md transition-all duration-200 ${
+                  editingPageId === page.id
+                    ? 'bg-[#232323]/60'
+                    : selectedPageId === page.id
+                    ? 'text-[#e3e3e3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] hover:bg-[#232323]/60 bg-[#232323]/60 cursor-pointer'
+                    : 'text-[#9b9b9b] hover:bg-[#232323]/60 hover:text-[#e3e3e3] hover:shadow-[0_2px_4px_rgba(0,0,0,0.2)] border border-transparent hover:border-[#2a2a2a]/40 cursor-pointer'
+                }`}
+                onClick={editingPageId === page.id ? undefined : () => onSelectPage(page)}
+              >
+                {editingPageId === page.id ? (
+                  // Edit Mode
+                  <div className="flex-1 flex items-center gap-2 py-1">
+                    <div className="text-2xl opacity-70">{page.icon || <i className='bx bx-file-detail'></i>}</div>
+                    <input
+                      type="text"
+                      value={editPageTitle}
+                      onChange={(e) => setEditPageTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveEdit(page.id);
+                        if (e.key === 'Escape') handleCancelEdit();
+                      }}
+                      className="flex-1 px-2 py-1 bg-[#191919]/80 text-[#e3e3e3] border border-[#2f2f2f]/60 rounded text-sm outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveEdit(page.id);
+                        }}
+                        className="p-1 hover:text-green-400 transition-all duration-200 rounded hover:bg-green-900/20"
+                        title="Save"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelEdit();
+                        }}
+                        className="p-1 hover:text-red-400 transition-all duration-200 rounded hover:bg-red-900/20"
+                        title="Cancel"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // View Mode
+                  <>
+                    <div className='flex gap-2 items-center flex-1 min-w-0'>
+                      {/* Page Icon */}
+                      <div className="text-2xl opacity-70 group-hover:scale-110 transition-transform duration-200">{page.icon || <i className='bx bx-file-detail mt-2'></i>}</div>
+
+                      {/* Page Title */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-md truncate font-normal">
+                          {page.title || 'Untitled'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-1">
+                      {/* Edit Button */}
+                      {canEdit && (
+                        <button
+                          onClick={(e) => handleEditPage(page, e)}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-blue-400 transition-all duration-200 rounded hover:bg-blue-900/20"
+                          title="Edit page title"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                      )}
+
+                      {/* Delete Button */}
+                      {canEdit && (
+                        <button
+                          onClick={(e) => handleDeletePage(page.id, e)}
+                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-red-400 transition-all duration-200 rounded hover:bg-red-900/20"
+                          title="Delete page"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+
+            {/* Add New Button - Below last page */}
             {canEdit && (
               <button
                 onClick={() => setIsCreating(true)}
-                className="text-[#9b9b9b] text-xs hover:text-[#e3e3e3] transition-all duration-200 hover:underline"
+                className="w-full flex items-center gap-2 px-2 py-2 text-[#9b9b9b] hover:text-[#e3e3e3] rounded-md hover:bg-[#232323]/60 transition-all duration-200 group mt-1"
               >
-                Create your first page →
+                <svg className="w-5 h-5 group-hover:rotate-90 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-sm">Add new</span>
               </button>
             )}
           </div>
-        ) : (
-          <div className="space-y-0.5">
-            {workspacePages.map((page) => (
-              <div
-                key={page.id}
-                onClick={() => onSelectPage(page)}
-                className={`group flex items-center justify-between gap-2 px-2 rounded-md cursor-pointer transition-all duration-200 ${selectedPageId === page.id
-                    ? 'text-[#e3e3e3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] hover:bg-[#232323]/60 bg-[#232323]/60'
-                    : 'text-[#9b9b9b] hover:bg-[#232323]/60 hover:text-[#e3e3e3] hover:shadow-[0_2px_4px_rgba(0,0,0,0.2)] border border-transparent hover:border-[#2a2a2a]/40'
-                  }`}
-              >
-                <div className='flex gap-2 items-center'>
-                  {/* Page Icon */}
-                  <div className="text-2xl opacity-70 group-hover:scale-110 transition-transform duration-200">{page.icon || <i className='bx  bx-file-detail mt-2'></i>}</div>
-
-                  {/* Page Title */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-md truncate font-normal">
-                      {page.title || 'Untitled'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center gap-1">
-                  {/* Share Button */}
-                  <button
-                    onClick={(e) => handleSharePage(page, e)}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-blue-400 transition-all duration-200 rounded hover:bg-blue-900/20"
-                    title="Share page"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
-                  </button>
-
-                  {/* Delete Button */}
-                  {canEdit && (
-                    <button
-                      onClick={(e) => handleDeletePage(page.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-red-400 transition-all duration-200 rounded hover:bg-red-900/20"
-                      title="Delete page"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-
-      {/* Share Page Modal */}
-      {shareModalPage && (
-        <SharePageModal
-          page={shareModalPage}
-          isOpen={!!shareModalPage}
-          onClose={() => setShareModalPage(null)}
-        />
-      )}
     </div>
   );
 }

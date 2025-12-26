@@ -54,12 +54,14 @@ export default function MemberList() {
     }
   };
 
+  const members = currentWorkspace.members || [];
+
   return (
     <div className="bg-linear-to-br from-[#1a1a1a]/90 to-[#1f1f1f]/90 rounded-xl border border-[#2a2a2a]/60 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-sm">
       {/* Header */}
       <div className="px-6 py-4 border-b border-[#2a2a2a]/60 bg-linear-to-r from-[#1f1f1f]/50 to-transparent">
         <h2 className="text-lg font-semibold text-[#e5e5e5]">
-          Members ({currentWorkspace.members.length})
+          Members ({members.length})
         </h2>
         <p className="text-sm text-[#6b6b6b] mt-1">
           Manage workspace members and their permissions
@@ -68,7 +70,7 @@ export default function MemberList() {
 
       {/* Member List */}
       <div className="divide-y divide-[#2a2a2a]/40">
-        {currentWorkspace.members.map((member) => {
+        {members.map((member) => {
           const isCurrentUser = member.userId === currentUserId;
           const isMemberOwner = member.role === 'owner';
           const canEditThisMember = canManage && !isMemberOwner && !isCurrentUser;

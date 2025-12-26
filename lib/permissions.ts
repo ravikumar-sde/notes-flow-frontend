@@ -16,6 +16,8 @@ export function hasPermission(
   userId: string,
   permission: Permission
 ): boolean {
+  if (!workspace.members) return false;
+
   const member = workspace.members.find((m) => m.userId === userId);
   if (!member) return false;
 
@@ -50,8 +52,35 @@ export function getUserPermissions(
   workspace: Workspace,
   userId: string
 ): PermissionCheck {
+  // If workspace has a role field (from API), use it directly
+  if (workspace.role) {
+    const capabilities = ROLE_CAPABILITIES[workspace.role];
+    const permissions = ROLE_PERMISSIONS[workspace.role];
+
+    return {
+      canEdit: permissions.includes('can_edit'),
+      canView: permissions.includes('can_view'),
+      canComment: permissions.includes('can_comment'),
+      canInvite: capabilities.canInvite,
+      canManageMembers: capabilities.canManageMembers,
+      canDelete: capabilities.canDeleteWorkspace,
+    };
+  }
+
+  // Fallback to members array for backwards compatibility
+  if (!workspace.members || workspace.members.length === 0) {
+    return {
+      canEdit: false,
+      canView: false,
+      canComment: false,
+      canInvite: false,
+      canManageMembers: false,
+      canDelete: false,
+    };
+  }
+
   const member = workspace.members.find((m) => m.userId === userId);
-  
+
   if (!member) {
     return {
       canEdit: false,
@@ -79,6 +108,11 @@ export function getUserPermissions(
  * Check if a user is the workspace owner
  */
 export function isWorkspaceOwner(workspace: Workspace, userId: string): boolean {
+  // If workspace has a role field, check if it's owner
+  if (workspace.role) {
+    return workspace.role === 'owner';
+  }
+  // Fallback to checking ownerId
   return workspace.ownerId === userId;
 }
 
@@ -86,9 +120,17 @@ export function isWorkspaceOwner(workspace: Workspace, userId: string): boolean 
  * Check if a user is an admin or owner
  */
 export function isAdminOrOwner(workspace: Workspace, userId: string): boolean {
+  // If workspace has a role field, check it directly
+  if (workspace.role) {
+    return workspace.role === 'owner' || workspace.role === 'admin';
+  }
+
+  // Fallback to members array
+  if (!workspace.members) return false;
+
   const member = workspace.members.find((m) => m.userId === userId);
   if (!member) return false;
-  
+
   return member.role === 'owner' || member.role === 'admin';
 }
 
@@ -99,7 +141,7 @@ export function getMember(
   workspace: Workspace,
   userId: string
 ): WorkspaceMember | undefined {
-  return workspace.members.find((m) => m.userId === userId);
+  return workspace.members?.find((m) => m.userId === userId);
 }
 
 /**

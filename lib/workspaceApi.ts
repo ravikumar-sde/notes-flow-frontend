@@ -30,12 +30,51 @@ export interface UpdateMemberRequest {
   permissions?: Permission[];
 }
 
+// API response types (snake_case from backend)
+interface WorkspaceApiResponse {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  created_at: string;
+  description?: string;
+  icon?: string;
+  updated_at?: string;
+  role: MemberRole;
+}
+
 export interface WorkspaceResponse {
-  workspace: Workspace;
+  workspace: WorkspaceApiResponse;
 }
 
 export interface WorkspacesListResponse {
-  workspaces: Workspace[];
+  workspaces: WorkspaceApiResponse[];
+  source?: string;
+}
+
+/**
+ * Transform API response to frontend Workspace type
+ */
+function transformWorkspace(apiWorkspace: WorkspaceApiResponse): Workspace {
+  return {
+    id: apiWorkspace.id,
+    name: apiWorkspace.name,
+    description: apiWorkspace.description,
+    icon: apiWorkspace.icon,
+    ownerId: apiWorkspace.owner_id,
+    createdAt: new Date(apiWorkspace.created_at),
+    updatedAt: apiWorkspace.updated_at ? new Date(apiWorkspace.updated_at) : new Date(apiWorkspace.created_at),
+    role: apiWorkspace.role,
+    // Members will be populated separately if needed
+    members: [],
+    // Default settings
+    settings: {
+      allowGuestInvites: true,
+      defaultPermission: 'can_view',
+      requireApproval: false,
+      publicPages: false,
+    },
+  };
 }
 
 /**
@@ -48,7 +87,7 @@ export async function listWorkspaces(): Promise<Workspace[]> {
   }
 
   const response = await get<WorkspacesListResponse>('/api/v1/workspaces', token);
-  return response.workspaces;
+  return response.workspaces.map(transformWorkspace);
 }
 
 /**
@@ -61,7 +100,7 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace> {
   }
 
   const response = await get<WorkspaceResponse>(`/api/v1/workspaces/${workspaceId}`, token);
-  return response.workspace;
+  return transformWorkspace(response.workspace);
 }
 
 /**
@@ -74,7 +113,7 @@ export async function createWorkspace(data: CreateWorkspaceRequest): Promise<Wor
   }
 
   const response = await post<WorkspaceResponse>('/api/v1/workspaces', data, token);
-  return response.workspace;
+  return transformWorkspace(response.workspace);
 }
 
 /**
@@ -94,7 +133,7 @@ export async function updateWorkspace(
     data,
     token
   );
-  return response.workspace;
+  return transformWorkspace(response.workspace);
 }
 
 /**

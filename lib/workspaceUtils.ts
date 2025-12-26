@@ -123,7 +123,7 @@ export function addMemberToWorkspace(
 
   return {
     ...workspace,
-    members: [...workspace.members, newMember],
+    members: [...(workspace.members || []), newMember],
     updatedAt: new Date(),
   };
 }
@@ -137,7 +137,7 @@ export function removeMemberFromWorkspace(
 ): Workspace {
   return {
     ...workspace,
-    members: workspace.members.filter((m) => m.id !== memberId),
+    members: (workspace.members || []).filter((m) => m.id !== memberId),
     updatedAt: new Date(),
   };
 }
@@ -151,7 +151,7 @@ export function updateMember(
 ): Workspace {
   return {
     ...workspace,
-    members: workspace.members.map((member) =>
+    members: (workspace.members || []).map((member) =>
       member.id === input.memberId
         ? {
             ...member,

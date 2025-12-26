@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Block, BlockType, Page } from '@/types/blocks';
 import { createBlock, updateBlockContent, removeBlock, insertBlockAt, findBlockIndex } from '@/lib/blockUtils';
 import SortableBlock from './blocks/SortableBlock';
@@ -53,6 +53,17 @@ export default function PageEditor({ page }: PageEditorProps) {
     setTitle(page.title);
     setBlocks(page.blocks.length > 0 ? page.blocks : [createBlock('paragraph')]);
   }
+
+  // Focus on title when page is new (Untitled)
+  useEffect(() => {
+    if (page.title === 'Untitled' && textareaRef.current && canEdit) {
+      // Use setTimeout to ensure the component is fully rendered
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        textareaRef.current?.select();
+      }, 100);
+    }
+  }, [page.id, page.title, canEdit]);
 
   const handleConvertBlockType = (blockId: string, newType: BlockType) => {
     setBlocks(prevBlocks =>

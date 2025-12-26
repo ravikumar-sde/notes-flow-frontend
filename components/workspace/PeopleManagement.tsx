@@ -108,6 +108,8 @@ export default function PeopleManagement() {
     }
   };
 
+  const members = currentWorkspace.members || [];
+
   return (
     <div className="max-w-4xl space-y-6">
       {/* Header with Add Member Button */}
@@ -115,7 +117,7 @@ export default function PeopleManagement() {
         <div>
           <h3 className="text-md font-semibold text-[#e5e5e5]">Members</h3>
           <p className="text-sm text-[#9b9b9b] mt-1">
-            {currentWorkspace.members.length} member{currentWorkspace.members.length !== 1 ? 's' : ''} in this workspace
+            {members.length} member{members.length !== 1 ? 's' : ''} in this workspace
           </p>
         </div>
         {canManage && (
@@ -208,7 +210,7 @@ export default function PeopleManagement() {
 
       {/* Members List */}
       <div className="space-y-2">
-        {currentWorkspace.members.map((member) => (
+        {members.map((member) => (
           <div
             key={member.id}
             className="p-4 bg-[#1f1f1f]/80 border border-[#2a2a2a]/60 rounded-lg hover:border-[#3a3a3a]/60 transition-all"
