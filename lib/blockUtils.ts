@@ -101,7 +101,7 @@ export function createBlock(type: BlockType): Block {
 }
 
 // Update block content
-export function updateBlockContent(block: Block, content: any): Block {
+export function updateBlockContent<T extends Block>(block: T, content: Partial<T>): T {
   return {
     ...block,
     ...content,

@@ -61,9 +61,12 @@ interface WorkspaceContextType {
   declineWorkspaceInvitation: (invitationId: string) => void;
 
   // Page actions
-  createPage: (title: string) => Page;
+  createPage: (title: string, parentId?: string | null) => Page;
   deletePage: (pageId: string) => void;
   updatePageTitle: (pageId: string, title: string) => void;
+  movePageToParent: (pageId: string, newParentId: string | null) => void;
+  getPageLevel: (pageId: string) => number;
+  canAddChildPage: (parentId: string) => boolean;
 
   // Permission checks
   canUserEdit: () => boolean;
@@ -370,10 +373,39 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     );
   }, [invitations]);
 
+  // Helper function to get page level (0 for root, 1-3 for nested)
+  const getPageLevel = useCallback((pageId: string): number => {
+    const page = pages.find(p => p.id === pageId);
+    if (!page || !page.parentId) return 0;
+
+    let level = 1;
+    let currentParentId = page.parentId;
+
+    while (currentParentId && level < 3) {
+      const parent = pages.find(p => p.id === currentParentId);
+      if (!parent || !parent.parentId) break;
+      currentParentId = parent.parentId;
+      level++;
+    }
+
+    return level;
+  }, [pages]);
+
+  // Check if a page can have children (max 3 levels)
+  const canAddChildPage = useCallback((parentId: string): boolean => {
+    const level = getPageLevel(parentId);
+    return level < 2; // Can add child if parent is at level 0, 1, or 2 (child will be at level 1, 2, or 3)
+  }, [getPageLevel]);
+
   // Create page (continued in next section due to line limit)
-  const createPage = useCallback((title: string): Page => {
+  const createPage = useCallback((title: string, parentId?: string | null): Page => {
     if (!currentWorkspace) {
       throw new Error('No workspace selected');
+    }
+
+    // Validate hierarchy depth
+    if (parentId && !canAddChildPage(parentId)) {
+      throw new Error('Maximum nesting level (3) reached');
     }
 
     const newPage: Page = {
@@ -385,16 +417,50 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
       createdAt: new Date(),
       updatedAt: new Date(),
       isPublic: false,
+      parentId: parentId || null,
+      order: pages.filter(p => p.parentId === (parentId || null)).length,
     };
 
     setPages((prev) => [...prev, newPage]);
     return newPage;
-  }, [currentWorkspace, currentUserId]);
+  }, [currentWorkspace, currentUserId, pages, canAddChildPage]);
 
-  // Delete page
+  // Delete page and all its children
   const deletePage = useCallback((pageId: string) => {
-    setPages((prev) => prev.filter((page) => page.id !== pageId));
-  }, []);
+    const getChildIds = (id: string): string[] => {
+      const children = pages.filter(p => p.parentId === id);
+      return [id, ...children.flatMap(child => getChildIds(child.id))];
+    };
+
+    const idsToDelete = getChildIds(pageId);
+    setPages((prev) => prev.filter((page) => !idsToDelete.includes(page.id)));
+  }, [pages]);
+
+  // Move page to a new parent
+  const movePageToParent = useCallback((pageId: string, newParentId: string | null) => {
+    // Validate that we're not creating a circular reference
+    if (newParentId) {
+      let currentId: string | null = newParentId;
+      while (currentId) {
+        if (currentId === pageId) {
+          throw new Error('Cannot move page to its own descendant');
+        }
+        const parent = pages.find(p => p.id === currentId);
+        currentId = parent?.parentId || null;
+      }
+
+      // Validate hierarchy depth
+      if (!canAddChildPage(newParentId)) {
+        throw new Error('Maximum nesting level (3) reached');
+      }
+    }
+
+    setPages((prev) => prev.map(page =>
+      page.id === pageId
+        ? { ...page, parentId: newParentId, order: prev.filter(p => p.parentId === newParentId).length }
+        : page
+    ));
+  }, [pages, canAddChildPage]);
 
   // Update page title
   const updatePageTitle = useCallback((pageId: string, title: string) => {
@@ -455,6 +521,9 @@ export function WorkspaceProvider({ children, initialUserId }: WorkspaceProvider
     createPage,
     deletePage,
     updatePageTitle,
+    movePageToParent,
+    getPageLevel,
+    canAddChildPage,
     canUserEdit,
     canUserView,
     canUserComment,

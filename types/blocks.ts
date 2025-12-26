@@ -114,5 +114,14 @@ export interface Page {
   updatedBy?: string; // userId of last editor
   isPublic: boolean; // Whether page is publicly accessible
   icon?: string; // Page icon/emoji
+  parentId?: string | null; // Parent page ID for hierarchy (null for root pages)
+  order?: number; // Order within parent or root level
+}
+
+// Helper type for page with children (used in UI)
+export interface PageWithChildren extends Page {
+  children: PageWithChildren[];
+  level: number; // 0 for root, 1-3 for nested
+  isExpanded?: boolean; // UI state for expand/collapse
 }
 

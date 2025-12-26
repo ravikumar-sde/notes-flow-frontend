@@ -151,14 +151,14 @@ export default function WorkspaceSelector() {
     <div className="relative">
       {showEditForm ? (
         /* Edit Workspace Form */
-        <div className="p-4 bg-linear-to-br from-[#1a1a1a]/90 to-[#1f1f1f]/90 rounded-md border border-[#2a2a2a]/50 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
-          <div className="text-sm font-semibold text-[#e5e5e5] mb-3">Edit Workspace</div>
+        <div className="p-2.5 bg-linear-to-br from-[#1a1a1a]/90 to-[#1f1f1f]/90 rounded-md border border-[#2a2a2a]/50 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
+          <div className="text-xs font-semibold text-[#e5e5e5] mb-2">Edit Workspace</div>
           <input
             type="text"
             value={editWorkspaceName}
             onChange={(e) => setEditWorkspaceName(e.target.value)}
             placeholder="Workspace name"
-            className="w-full px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-2 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
+            className="w-full px-2 py-1.5 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-md text-xs mb-1.5 outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
             autoFocus
           />
           <input
@@ -166,13 +166,13 @@ export default function WorkspaceSelector() {
             value={editWorkspaceDescription}
             onChange={(e) => setEditWorkspaceDescription(e.target.value)}
             placeholder="Description (optional)"
-            className="w-full px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm mb-3 outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
+            className="w-full px-2 py-1.5 bg-[#1f1f1f]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-md text-xs mb-2 outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] placeholder-[#6b6b6b]"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             <button
               onClick={handleSaveEdit}
               disabled={!editWorkspaceName.trim()}
-              className="flex-1 px-3 py-2 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)]"
+              className="flex-1 px-2 py-1.5 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-md text-xs font-medium hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)]"
             >
               Save
             </button>
@@ -182,7 +182,7 @@ export default function WorkspaceSelector() {
                 setEditWorkspaceName('');
                 setEditWorkspaceDescription('');
               }}
-              className="px-3 py-2 bg-[#1f1f1f]/80 text-[#e5e5e5] rounded-lg text-sm hover:bg-[#2a2a2a]/80 transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60"
+              className="px-2 py-1.5 bg-[#1f1f1f]/80 text-[#e5e5e5] rounded-md text-xs hover:bg-[#2a2a2a]/80 transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60"
             >
               Cancel
             </button>
@@ -192,24 +192,24 @@ export default function WorkspaceSelector() {
         /* Current Workspace Button */
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-linear-to-br from-[#1a1a1a]/90 via-[#1f1f1f]/90 to-[#1a1a1a]/90 text-[#f5f5f5] rounded-md hover:from-[#242424]/90 hover:via-[#2a2a2a]/90 hover:to-[#242424]/90 transition-all duration-300 border border-[#2a2a2a]/50 hover:border-[#3a3a3a] shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm group"
+          className="w-full flex items-center gap-2 px-2.5 py-2 bg-linear-to-br from-[#1a1a1a]/90 via-[#1f1f1f]/90 to-[#1a1a1a]/90 text-[#f5f5f5] rounded-md hover:from-[#242424]/90 hover:via-[#2a2a2a]/90 hover:to-[#242424]/90 transition-all duration-300 border border-[#2a2a2a]/50 hover:border-[#3a3a3a] shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.5)] backdrop-blur-sm group"
         >
           {/* Workspace Avatar */}
-          <div className="w-10 h-10 bg-[#2a2a2a]/60 rounded-md flex items-center justify-center text-lg font-semibold text-[#e5e5e5] group-hover:scale-110 transition-transform duration-300">
+          <div className="w-7 h-7 bg-[#2a2a2a]/60 rounded-md flex items-center justify-center text-sm font-semibold text-[#e5e5e5] group-hover:scale-110 transition-transform duration-300">
             {currentWorkspace?.name?.charAt(0).toUpperCase() || 'W'}
           </div>
 
-          <div className="flex-1 text-left">
-            <div className="font-semibold text-sm text-[#e5e5e5]">
+          <div className="flex-1 text-left min-w-0">
+            <div className="font-medium text-xs text-[#e5e5e5] truncate">
               {currentWorkspace?.name || 'Select Workspace'}
             </div>
-            <div className="text-xs text-[#a0a0a0]">
+            <div className="text-[10px] text-[#a0a0a0] truncate">
               {user?.name || 'User'}
             </div>
           </div>
 
           <svg
-            className={`w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+            className={`w-3.5 h-3.5 transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -221,12 +221,12 @@ export default function WorkspaceSelector() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 max-h-[500px] overflow-hidden backdrop-blur-xl">
+        <div className="absolute top-full left-0 mt-1.5 w-full bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-md shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50 max-h-[400px] overflow-hidden backdrop-blur-xl">
           {/* Error Message */}
           {error && (
-            <div className="p-3 m-2 bg-red-900/20 border border-red-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-red-400 text-sm">
-                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-2 m-1.5 bg-red-900/20 border border-red-500/30 rounded-md">
+              <div className="flex items-center gap-1.5 text-red-400 text-xs">
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>{error}</span>
@@ -235,52 +235,52 @@ export default function WorkspaceSelector() {
           )}
 
           {/* Settings and Invite Buttons */}
-          <div className="p-2 flex gap-2">
+          <div className="p-1.5 flex gap-1.5">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowSettingsModal(true);
                 setIsOpen(false);
               }}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1f1f1f]/80 text-[#9b9b9b] rounded-lg hover:bg-[#252525]/80 hover:text-[#e5e5e5] transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60 group"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-[#1f1f1f]/80 text-[#9b9b9b] rounded-md hover:bg-[#252525]/80 hover:text-[#e5e5e5] transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60 group"
               title="Settings"
             >
-              <svg className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 group-hover:rotate-45 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span className="text-sm font-medium">Settings</span>
+              <span className="text-xs font-medium">Settings</span>
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleOpenInviteModal();
               }}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-[#1f1f1f]/80 text-[#9b9b9b] rounded-lg hover:bg-[#252525]/80 hover:text-[#e5e5e5] transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60 group"
+              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-[#1f1f1f]/80 text-[#9b9b9b] rounded-md hover:bg-[#252525]/80 hover:text-[#e5e5e5] transition-all duration-200 border border-[#2a2a2a]/40 hover:border-[#3a3a3a]/60 group"
               title="Invite members"
             >
-              <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
               </svg>
-              <span className="text-sm font-medium">Invite</span>
+              <span className="text-xs font-medium">Invite</span>
             </button>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-[#2a2a2a]/60 my-2 shadow-[0_1px_0_rgba(255,255,255,0.03)]" />
+          <div className="border-t border-[#2a2a2a]/60 my-1.5 shadow-[0_1px_0_rgba(255,255,255,0.03)]" />
 
           {/* Workspace List */}
-          <div className="p-2 max-h-[400px] overflow-y-auto">
+          <div className="p-1.5 max-h-[300px] overflow-y-auto">
             {workspaces.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-[#6b6b6b] text-center">
+              <div className="px-2 py-3 text-xs text-[#6b6b6b] text-center">
                 No workspaces yet. Create one to get started!
               </div>
             ) : (
               Object.entries(groupedWorkspaces).map(([email, emailWorkspaces]) => (
-                <div key={email} className="mb-4 last:mb-0">
+                <div key={email} className="mb-2 last:mb-0">
                   {/* Email Separator */}
-                  <div className="text-xs text-[#6b6b6b] px-3 py-2 font-semibold tracking-wider flex items-center gap-2">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="text-[10px] text-[#6b6b6b] px-2 py-1 font-semibold tracking-wider flex items-center gap-1.5">
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     {email}
@@ -290,7 +290,7 @@ export default function WorkspaceSelector() {
                   {emailWorkspaces.map((workspace) => (
                     <div
                       key={workspace.id}
-                      className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-md transition-all duration-200 group ${
+                      className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md transition-all duration-200 group ${
                         currentWorkspace?.id === workspace.id
                           ? 'bg-linear-to-r from-[#2a2a2a]/80 to-[#252525]/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] border border-[#3a3a3a]/40'
                           : 'hover:bg-[#252525]/60 hover:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
@@ -298,19 +298,19 @@ export default function WorkspaceSelector() {
                     >
                       <button
                         onClick={() => handleSelectWorkspace(workspace)}
-                        className="flex items-center gap-3 flex-1 min-w-0"
+                        className="flex items-center gap-2 flex-1 min-w-0"
                       >
-                        <div className="w-8 h-8 bg-[#2a2a2a]/60 rounded-md flex items-center justify-center text-sm font-semibold shrink-0">
+                        <div className="w-6 h-6 bg-[#2a2a2a]/60 rounded-md flex items-center justify-center text-xs font-semibold shrink-0">
                           {workspace.name?.charAt(0) || 'W'}
                         </div>
                         <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm text-[#e5e5e5] font-medium truncate">{workspace.name}</div>
-                          <div className="text-xs text-[#6b6b6b]">
+                          <div className="text-xs text-[#e5e5e5] font-medium truncate">{workspace.name}</div>
+                          <div className="text-[10px] text-[#6b6b6b]">
                             {(workspace.members || []).length} member{(workspace.members || []).length !== 1 ? 's' : ''}
                           </div>
                         </div>
                         {currentWorkspace?.id === workspace.id && (
-                          <svg className="w-4 h-4 text-blue-500 drop-shadow-[0_0_4px_rgba(99,102,241,0.5)] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-3.5 h-3.5 text-blue-500 drop-shadow-[0_0_4px_rgba(99,102,241,0.5)] shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path
                               fillRule="evenodd"
                               d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -454,12 +454,12 @@ export default function WorkspaceSelector() {
               setCodeCopied(false);
             }}
           />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <div className="bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-lg backdrop-blur-xl">
-              <div className="px-6 py-4 border-b border-[#2a2a2a]/60 bg-[#0f0f0f]/30 flex items-center justify-between">
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-3">
+            <div className="bg-[#1a1a1a]/95 border border-[#2a2a2a]/60 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.6)] w-full max-w-md backdrop-blur-xl">
+              <div className="px-4 py-3 border-b border-[#2a2a2a]/60 bg-[#0f0f0f]/30 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-[#e5e5e5]">Invite to Workspace</h2>
-                  <p className="text-sm text-[#6b6b6b] mt-1">{currentWorkspace?.name}</p>
+                  <h2 className="text-sm font-semibold text-[#e5e5e5]">Invite to Workspace</h2>
+                  <p className="text-xs text-[#6b6b6b] mt-0.5">{currentWorkspace?.name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -467,40 +467,40 @@ export default function WorkspaceSelector() {
                     setLinkCopied(false);
                     setCodeCopied(false);
                   }}
-                  className="text-[#6b6b6b] hover:text-[#e5e5e5] transition-colors p-2 hover:bg-[#2a2a2a]/60 rounded-lg"
+                  className="text-[#6b6b6b] hover:text-[#e5e5e5] transition-colors p-1 hover:bg-[#2a2a2a]/60 rounded-md"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <div className="p-6 space-y-6">
+              <div className="p-4 space-y-4">
                 {/* Invite Link Section */}
                 <div>
-                  <label className="block text-sm font-medium text-[#e5e5e5] mb-2">
+                  <label className="block text-xs font-medium text-[#e5e5e5] mb-1.5">
                     Invite Link
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <input
                       type="text"
                       value={inviteLink}
                       readOnly
-                      className="flex-1 px-3 py-2.5 bg-[#252525]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] transition-all"
+                      className="flex-1 px-2 py-1.5 bg-[#252525]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-md text-xs outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] transition-all"
                     />
                     <button
                       onClick={handleCopyLink}
-                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)] flex items-center gap-2"
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)] flex items-center gap-1.5"
                     >
                       {linkCopied ? (
                         <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           Copied
                         </>
                       ) : (
                         <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
                           Copy
@@ -508,7 +508,7 @@ export default function WorkspaceSelector() {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-[#6b6b6b] mt-2">
+                  <p className="text-[10px] text-[#6b6b6b] mt-1.5">
                     Share this link with anyone you want to invite to this workspace
                   </p>
                 </div>
@@ -518,37 +518,37 @@ export default function WorkspaceSelector() {
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-[#2a2a2a]/60"></div>
                   </div>
-                  <div className="relative flex justify-center text-xs">
+                  <div className="relative flex justify-center text-[10px]">
                     <span className="px-2 bg-[#1a1a1a] text-[#6b6b6b]">OR</span>
                   </div>
                 </div>
 
                 {/* Invite Code Section */}
                 <div>
-                  <label className="block text-sm font-medium text-[#e5e5e5] mb-2">
+                  <label className="block text-xs font-medium text-[#e5e5e5] mb-1.5">
                     Invite Code
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <input
                       type="text"
                       value={inviteCode}
                       readOnly
-                      className="flex-1 px-3 py-2.5 bg-[#252525]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] transition-all"
+                      className="flex-1 px-2 py-1.5 bg-[#252525]/80 text-[#e5e5e5] border border-[#2a2a2a]/60 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.3)] transition-all"
                     />
                     <button
                       onClick={handleCopyCode}
-                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)] flex items-center gap-2"
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-medium transition-all duration-200 shadow-[0_2px_8px_rgba(37,99,235,0.3)] hover:shadow-[0_4px_12px_rgba(37,99,235,0.4)] flex items-center gap-1.5"
                     >
                       {codeCopied ? (
                         <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                           Copied
                         </>
                       ) : (
                         <>
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                           </svg>
                           Copy
@@ -556,7 +556,7 @@ export default function WorkspaceSelector() {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-[#6b6b6b] mt-2">
+                  <p className="text-[10px] text-[#6b6b6b] mt-1.5">
                     Share this code for manual workspace joining
                   </p>
                 </div>

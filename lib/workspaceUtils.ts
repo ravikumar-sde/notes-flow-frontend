@@ -6,7 +6,6 @@ import {
   InviteMemberInput,
   UpdateMemberInput,
   MemberRole,
-  InvitationStatus,
   ROLE_PERMISSIONS,
   Permission,
 } from '@/types/workspace';

@@ -35,16 +35,16 @@ export default function WorkspaceSidebar({ onSelectPage, selectedPageId, isColla
         </div>
       )}
       {!isCollapsed && (
-        <div className={`relative h-screen bg-linear-to-br from-[#0f0f0f] via-[#0f0f0f] to-[#1a1a1a]/50 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-96'
+        <div className={`relative h-screen bg-linear-to-br from-[#0f0f0f] via-[#0f0f0f] to-[#1a1a1a]/50 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-72'
           }`}>
           {/* Collapse Toggle Button */}
           <button
             onClick={onToggleCollapse}
-            className="absolute -right-5 top-8 z-50 w-8 h-8 bg-[#1a1a1a] border border-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-[#252525] transition-all duration-200 shadow-lg"
+            className="absolute -right-4 top-6 z-50 w-7 h-7 bg-[#1a1a1a] border border-[#2a2a2a] rounded-full flex items-center justify-center hover:bg-[#252525] transition-all duration-200 shadow-lg"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <svg
-              className={`w-4 h-4 text-[#9b9b9b] transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+              className={`w-3.5 h-3.5 text-[#9b9b9b] transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -53,7 +53,7 @@ export default function WorkspaceSidebar({ onSelectPage, selectedPageId, isColla
             </svg>
           </button>
           {/* Workspace Selector */}
-          <div className="p-3 border-b border-[#191919]/60 bg-linear-to-b from-[#1a1a1a]/20 to-transparent">
+          <div className="p-2 border-b border-[#191919]/60 bg-linear-to-b from-[#1a1a1a]/20 to-transparent">
             <WorkspaceSelector />
           </div>
 
