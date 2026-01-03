@@ -1,6 +1,15 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ESLintWebpackPlugin = require('eslint-webpack-plugin');
+const dotenv = require('dotenv');
+const webpack = require('webpack');
 
+const env = dotenv.config().parsed || {};
+
+const envKeys = Object.keys(env).reduce((prev, next) => {
+    prev[`process.env.${next}`] = JSON.stringify(env[next]);
+    return prev;
+}, {});
 
 module.exports = {
     entry: "./src/index.jsx",
@@ -27,6 +36,10 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: "./public/index.html",
         }),
+        new ESLintWebpackPlugin({
+            extensions: ["js", "jsx"],
+        }),
+        new webpack.DefinePlugin(envKeys)
     ],
     devServer: {
         static: {
